@@ -40,10 +40,6 @@ const config: HardhatUserConfig = {
 		},
 	},
 
-	cofhe: {
-		logMocks: true,
-	},
-
 	// Optional: Add Etherscan verification config
 	etherscan: {
 		apiKey: {
