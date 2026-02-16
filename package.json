@@ -6,29 +6,17 @@
 		"test": "REPORT_GAS=true hardhat test",
 		"clean": "rimraf ./artifacts ./cache ./coverage ./types ./coverage.json ./deployments/localcofhe",
 		"compile": "hardhat compile",
-		"--------------": "",
-		" --- cofhe ---": "",
-		"  --------------": "",
 		"// task:deploy": "hardhat deploy",
 		"// task:addCount": "hardhat task:addCount",
 		"// task:getCount": "hardhat task:getCount",
-		"// ------------------- ": "",
-		"//  --- localcofhe ---": "",
-		"//    -------------------": "",
 		"// localcofhe:start": "hardhat localcofhe:start --clean true",
 		"localcofhe:test": "REPORT_GAS=true hardhat test --network localcofhe",
 		"localcofhe:faucet": "hardhat task:cofhe:usefaucet --network localcofhe",
 		"// localcofhe:deploy": "hardhat deploy --network localcofhe",
 		"// localcofhe:stop": "hardhat localcofhe:stop",
-		"// --------------------": "",
-		"//  --- sepolia ---": "",
-		"//   --------------------": "",
 		"eth-sepolia:deploy-counter": "hardhat deploy-counter --network eth-sepolia",
 		"eth-sepolia:increment-counter": "hardhat increment-counter --network eth-sepolia",
 		"eth-sepolia:reset-counter": "hardhat reset-counter --network eth-sepolia",
-		"// -------------------": "",
-		"//  --- arbitrum-sepolia ---": "",
-		"//   -------------------": "",
 		"arb-sepolia:deploy-counter": "hardhat deploy-counter --network arb-sepolia",
 		"arb-sepolia:increment-counter": "hardhat increment-counter --network arb-sepolia",
 		"arb-sepolia:reset-counter": "hardhat reset-counter --network arb-sepolia"
@@ -71,11 +59,5 @@
 		"ts-node": ">=8.0.0",
 		"typechain": "^8.3.0",
 		"typescript": ">=4.5.0"
-	},
-	"devDependencies2": {
-		"@fhenixprotocol/cofhe-contracts": "0.0.13",
-		"@fhenixprotocol/cofhe-mock-contracts": "^0.3.0",
-		"cofhe-hardhat-plugin": "^0.3.0",
-		"cofhejs": "^0.3.0"
 	}
 }
