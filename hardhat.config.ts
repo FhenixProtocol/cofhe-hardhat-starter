@@ -1,7 +1,7 @@
 import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
 import '@nomicfoundation/hardhat-ethers'
-import 'cofhe-hardhat-plugin'
+import '@cofhe/hardhat-plugin'
 import * as dotenv from 'dotenv'
 import './tasks'
 
@@ -38,6 +38,16 @@ const config: HardhatUserConfig = {
 			timeout: 60000,
 			httpHeaders: {},
 		},
+
+		// Base Sepolia testnet configuration
+		'base-sepolia': {
+			url: process.env.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org',
+			accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+			chainId: 84532,
+			gasMultiplier: 1.2,
+			timeout: 60000,
+			httpHeaders: {},
+		},
 	},
 
 	// Optional: Add Etherscan verification config
@@ -45,6 +55,7 @@ const config: HardhatUserConfig = {
 		apiKey: {
 			'eth-sepolia': process.env.ETHERSCAN_API_KEY || '',
 			'arb-sepolia': process.env.ARBISCAN_API_KEY || '',
+			'base-sepolia': process.env.BASESCAN_API_KEY || '',
 		},
 	},
 }
