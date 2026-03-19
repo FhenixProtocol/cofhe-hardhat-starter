@@ -1,7 +1,4 @@
-import {
-  loadFixture,
-  time,
-} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import hre from "hardhat";
 import { Encryptable, FheTypes } from "@cofhe/sdk";
 import { PermitUtils } from "@cofhe/sdk/permits";
@@ -18,9 +15,7 @@ describe("Counter", function () {
     const Counter = await hre.ethers.getContractFactory("Counter");
     const counter = await Counter.connect(bob).deploy();
 
-    const client = await hre.cofhesdk.createBatteriesIncludedCofhesdkClient(
-      bob,
-    );
+    const client = await hre.cofhe.createClientWithBatteries(bob);
 
     return { counter, signer, bob, alice, client };
   }
@@ -31,16 +26,16 @@ describe("Counter", function () {
 
       const count = await counter.count();
       const decrypted = await client
-        .decryptHandle(count, FheTypes.Uint32)
-        .decrypt();
+        .decryptForView(count, FheTypes.Uint32)
+        .execute();
       expect(decrypted).to.equal(0n);
 
       await counter.connect(bob).increment();
 
       const count2 = await counter.count();
       const decrypted2 = await client
-        .decryptHandle(count2, FheTypes.Uint32)
-        .decrypt();
+        .decryptForView(count2, FheTypes.Uint32)
+        .execute();
       expect(decrypted2).to.equal(1n);
     });
 
@@ -52,16 +47,16 @@ describe("Counter", function () {
 
       const count = await counter.count();
       const decrypted = await client
-        .decryptHandle(count, FheTypes.Uint32)
-        .decrypt();
+        .decryptForView(count, FheTypes.Uint32)
+        .execute();
       expect(decrypted).to.equal(1n);
 
       await counter.connect(bob).decrement();
 
       const count2 = await counter.count();
       const decrypted2 = await client
-        .decryptHandle(count2, FheTypes.Uint32)
-        .decrypt();
+        .decryptForView(count2, FheTypes.Uint32)
+        .execute();
       expect(decrypted2).to.equal(0n);
     });
 
@@ -70,13 +65,13 @@ describe("Counter", function () {
 
       const encrypted = await client
         .encryptInputs([Encryptable.uint32(2000n)])
-        .encrypt();
+        .execute();
       await counter.connect(bob).reset(encrypted[0]);
 
       const count = await counter.count();
       const decrypted = await client
-        .decryptHandle(count, FheTypes.Uint32)
-        .decrypt();
+        .decryptForView(count, FheTypes.Uint32)
+        .execute();
       expect(decrypted).to.equal(2000n);
     });
 
@@ -86,7 +81,7 @@ describe("Counter", function () {
       // Reset to 10
       const encrypted = await client
         .encryptInputs([Encryptable.uint32(10n)])
-        .encrypt();
+        .execute();
       await counter.connect(bob).reset(encrypted[0]);
 
       // Increment 3 times: 10 -> 11 -> 12 -> 13
@@ -99,50 +94,78 @@ describe("Counter", function () {
 
       const count = await counter.count();
       const decrypted = await client
-        .decryptHandle(count, FheTypes.Uint32)
-        .decrypt();
+        .decryptForView(count, FheTypes.Uint32)
+        .execute();
       expect(decrypted).to.equal(12n);
     });
   });
 
   describe("On-chain Decryption", function () {
-    it("Should revert getDecryptedValue before decryption is returned", async function () {
+    it("Should revert getDecryptedValue before decryption result is published", async function () {
       const { counter, bob, client } = await loadFixture(deployCounterFixture);
 
       // Set counter to a known value
       const encrypted = await client
         .encryptInputs([Encryptable.uint32(42n)])
-        .encrypt();
+        .execute();
       await counter.connect(bob).reset(encrypted[0]);
 
-      // Request on-chain decryption (async — the coprocessor calls back later)
-      await counter.connect(bob).decryptCounter();
-
-      // In mock mode, the coprocessor decryption hasn't been processed yet
-      // so getDecryptedValue should revert with "Value is not ready"
+      // Before publishing a decrypt result, getDecryptedValue should revert
       await expect(counter.getDecryptedValue()).to.be.revertedWith(
         "Value is not ready",
       );
     });
 
-    it("Should return decrypted value after enough time has passed", async function () {
+    it("Should return decrypted value after the 3-step decrypt flow", async function () {
       const { counter, bob, client } = await loadFixture(deployCounterFixture);
 
       // Set counter to a known value
       const encrypted = await client
         .encryptInputs([Encryptable.uint32(42n)])
-        .encrypt();
+        .execute();
       await counter.connect(bob).reset(encrypted[0]);
 
-      // Request on-chain decryption
-      await counter.connect(bob).decryptCounter();
+      // Step 1: Grant public decryption permission on-chain
+      await counter.connect(bob).allowCounterPublicly();
 
-      // Advance time to allow the mock coprocessor to process the decryption callback
-      await time.increase(100);
+      // Step 2: Decrypt off-chain via the SDK (returns plaintext + Threshold Network signature)
+      const ctHash = await counter.count();
+      const result = await client
+        .decryptForTx(ctHash)
+        .withoutPermit()
+        .execute();
 
-      // Now the decrypted value should be available
+      // Step 3: Submit the verified plaintext + signature back on-chain
+      await counter
+        .connect(bob)
+        .revealCounter(result.decryptedValue, result.signature);
+
+      // Now the decrypted value should be available on-chain
       const decryptedValue = await counter.getDecryptedValue();
       expect(decryptedValue).to.equal(42n);
+    });
+
+    it("Should work with increment then reveal", async function () {
+      const { counter, bob, client } = await loadFixture(deployCounterFixture);
+
+      // Increment counter: 0 -> 1
+      await counter.connect(bob).increment();
+
+      // 3-step decryption flow
+      await counter.connect(bob).allowCounterPublicly();
+
+      const ctHash = await counter.count();
+      const result = await client
+        .decryptForTx(ctHash)
+        .withoutPermit()
+        .execute();
+
+      await counter
+        .connect(bob)
+        .revealCounter(result.decryptedValue, result.signature);
+
+      const decryptedValue = await counter.getDecryptedValue();
+      expect(decryptedValue).to.equal(1n);
     });
   });
 
@@ -151,15 +174,12 @@ describe("Counter", function () {
       const { counter, bob } = await loadFixture(deployCounterFixture);
 
       // withLogs wraps a block of code and logs all FHE operations within it
-      await hre.cofhesdk.mocks.withLogs(
-        "counter.increment()",
-        async () => {
-          await counter.connect(bob).increment();
-        },
-      );
+      await hre.cofhe.mocks.withLogs("counter.increment()", async () => {
+        await counter.connect(bob).increment();
+      });
 
       // Verify the operation still executed correctly
-      const plaintext = await hre.cofhesdk.mocks.getPlaintext(
+      const plaintext = await hre.cofhe.mocks.getPlaintext(
         await counter.count(),
       );
       expect(plaintext).to.equal(1n);
@@ -173,7 +193,7 @@ describe("Counter", function () {
 
       // mocks.expectPlaintext asserts on the plaintext behind a ciphertext hash
       const countHash = await counter.count();
-      await hre.cofhesdk.mocks.expectPlaintext(countHash, 2n);
+      await hre.cofhe.mocks.expectPlaintext(countHash, 2n);
     });
   });
 
@@ -213,9 +233,7 @@ describe("Counter", function () {
         );
       } catch (error) {
         expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.equal(
-          "PermissionInvalid_Expired",
-        );
+        expect((error as Error).message).to.equal("PermissionInvalid_Expired");
       }
     });
 
