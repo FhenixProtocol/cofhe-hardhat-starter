@@ -41,6 +41,6 @@ task('increment-counter', 'Increment the counter on the deployed contract').setA
 	const newCount = await counter.count()
 	console.log(`New count: ${newCount}`)
 	console.log('Unsealing new count...')
-	const unsealedCount = await client.decryptHandle(newCount, FheTypes.Uint32).decrypt()
+	const unsealedCount = await client.decryptForView(newCount, FheTypes.Uint32).execute()
 	console.log(unsealedCount)
 })

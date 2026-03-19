@@ -89,16 +89,33 @@ This project uses `@cofhe/sdk` and the `@cofhe/hardhat-plugin` to interact with 
   // Encrypt an input value
   const encrypted = await client
     .encryptInputs([Encryptable.uint32(2000n)])
-    .encrypt()
+    .execute()
   ```
 
-- **Decryption**: Decrypt ciphertext handles returned from contracts
+- **Decryption (off-chain view)**: Decrypt ciphertext handles for reading values off-chain
 
   ```typescript
-  // Decrypt a ciphertext handle
+  // Decrypt a ciphertext handle (off-chain, read-only)
   const decrypted = await client
-    .decryptHandle(ciphertextHandle, FheTypes.Uint32)
-    .decrypt()
+    .decryptForView(ciphertextHandle, FheTypes.Uint32)
+    .execute()
+  ```
+
+- **Decryption (on-chain publish)**: 3-step flow to decrypt and publish results on-chain
+
+  ```typescript
+  // Step 1: Grant public decryption permission (on-chain)
+  await contract.allowCounterPublicly() // calls FHE.allowPublic(ctHash)
+
+  // Step 2: Decrypt off-chain via the SDK (returns plaintext + Threshold Network signature)
+  const result = await client
+    .decryptForTx(ctHash)
+    .withoutPermit()
+    .execute()
+
+  // Step 3: Submit the verified plaintext + signature back on-chain
+  await contract.revealCounter(result.decryptedValue, result.signature)
+  // calls FHE.publishDecryptResult(ctHash, plaintext, signature)
   ```
 
 - **Permits**: Create and validate permits for secure contract interactions
@@ -120,33 +137,33 @@ This project uses `@cofhe/sdk` and the `@cofhe/hardhat-plugin` to interact with 
 
 ### `@cofhe/hardhat-plugin` Features
 
-- **Network Configuration**: Automatically configures CoFHE-enabled networks (including `localcofhe`)
-- **CoFHE SDK Integration**: Provides `hre.cofhesdk` with helpers for creating SDK clients
+- **Network Configuration**: Automatically configures CoFHE-enabled networks (`localcofhe`, `eth-sepolia`, `arb-sepolia`)
+- **CoFHE SDK Integration**: Provides `hre.cofhe` with helpers for creating SDK clients
 
   ```typescript
   // Create a batteries-included client (handles mock setup automatically)
-  const client = await hre.cofhesdk.createBatteriesIncludedCofhesdkClient(signer)
+  const client = await hre.cofhe.createClientWithBatteries(signer)
   ```
 
 - **Signer Adapter**: Convert Hardhat signers into CoFHE-compatible clients
 
   ```typescript
-  const { publicClient, walletClient } = await hre.cofhesdk.hardhatSignerAdapter(signer)
+  const { publicClient, walletClient } = await hre.cofhe.hardhatSignerAdapter(signer)
   ```
 
 - **Mock Testing Utilities**: Helper functions for testing FHE contracts in mock mode
 
   ```typescript
   // Log all FHE operations within a block
-  await hre.cofhesdk.mocks.withLogs('counter.increment()', async () => {
+  await hre.cofhe.mocks.withLogs('counter.increment()', async () => {
     await counter.connect(bob).increment()
   })
 
   // Assert on the plaintext behind a ciphertext hash
-  await hre.cofhesdk.mocks.expectPlaintext(countHash, 2n)
+  await hre.cofhe.mocks.expectPlaintext(countHash, 2n)
 
   // Get the plaintext value directly
-  const plaintext = await hre.cofhesdk.mocks.getPlaintext(await counter.count())
+  const plaintext = await hre.cofhe.mocks.getPlaintext(await counter.count())
   ```
 
 ### Environment Configuration
@@ -192,9 +209,10 @@ if (chain.environment === 'MOCK') {
 
 - Mock implementations of core CoFHE contracts:
   - MockTaskManager
-  - MockQueryDecrypter
+  - MockACL (Access Control List)
+  - MockThresholdNetwork
   - MockZkVerifier
-  - ACL (Access Control List)
+  - TestBed
 - Synchronous operation simulation with mock delays
 - On-chain access to unencrypted values for testing
 
@@ -208,9 +226,9 @@ Both `@cofhe/sdk` and `@cofhe/hardhat-plugin` interact directly with the mock co
 #### Mock Behavior Differences
 
 - **Symbolic Execution**: In mocks, ciphertext hashes point to plaintext values stored on-chain
-- **On-chain Decryption**: Mock decryption adds simulated delays to mimic real behavior
+- **On-chain Decryption**: Mock decryption uses `FHE.publishDecryptResult()` with mock Threshold Network signatures
 - **ZK Verification**: Mock verifier handles on-chain storage of encrypted inputs
-- **Off-chain Decryption**: When using `client.decryptHandle()`, mocks return plaintext values directly from on-chain storage
+- **Off-chain Decryption**: When using `client.decryptForView()`, mocks return plaintext values directly from on-chain storage
 
 ## License
 

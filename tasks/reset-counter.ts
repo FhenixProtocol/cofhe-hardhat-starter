@@ -27,7 +27,7 @@ task('reset-counter', 'reset the counter').setAction(async (_, hre: HardhatRunti
 	const Counter = await ethers.getContractFactory('Counter')
 	const counter = Counter.attach(counterAddress) as unknown as Counter
 
-	const encrypted = await client.encryptInputs([Encryptable.uint32(2000n)]).encrypt()
+	const encrypted = await client.encryptInputs([Encryptable.uint32(2000n)]).execute()
 
 	console.log('Resetting counter...')
 	const tx = await counter.reset(encrypted[0])

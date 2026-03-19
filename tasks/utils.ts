@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers'
-import { createCofhesdkConfig, createCofhesdkClient } from '@cofhe/sdk/node'
+import { createCofheConfig, createCofheClient as createCofheClientBase } from '@cofhe/sdk/node'
 import { getChainById } from '@cofhe/sdk/chains'
 
 // Directory to store deployed contract addresses
@@ -54,18 +54,18 @@ export const createCofheClient = async (hre: HardhatRuntimeEnvironment, signer: 
 
 	// On hardhat network, use the batteries-included client (handles mock ZK verifier)
 	if (chain.environment === 'MOCK') {
-		return hre.cofhesdk.createBatteriesIncludedCofhesdkClient(signer)
+		return hre.cofhe.createClientWithBatteries(signer)
 	}
 
 	// On real networks, use the SDK directly
-	const config = createCofhesdkConfig({
+	const config = createCofheConfig({
 		environment: 'node',
 		supportedChains: [chain],
 	})
 
-	const client = createCofhesdkClient(config)
+	const client = createCofheClientBase(config)
 
-	const { publicClient, walletClient } = await hre.cofhesdk.hardhatSignerAdapter(signer)
+	const { publicClient, walletClient } = await hre.cofhe.hardhatSignerAdapter(signer)
 	await client.connect(publicClient, walletClient)
 
 	await client.permits.createSelf({
