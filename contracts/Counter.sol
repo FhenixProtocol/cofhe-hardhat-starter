@@ -18,8 +18,6 @@ contract Counter {
         FHE.allowThis(count);
         FHE.allowThis(ONE);
 
-        FHE.gte(count, ONE);
-
         FHE.allowSender(count);
     }
 
@@ -41,15 +39,18 @@ contract Counter {
         FHE.allowSender(count);
     }
 
-    function decryptCounter() public {
-        FHE.decrypt(count);
+    function allowCounterPublicly() public {
+        FHE.allowPublic(count);
     }
 
-    function getDecryptedValue() external view returns(uint256) {
+    function revealCounter(uint32 plaintext, bytes memory signature) public {
+        FHE.publishDecryptResult(count, plaintext, signature);
+    }
+
+    function getDecryptedValue() external view returns (uint256) {
         (uint256 value, bool decrypted) = FHE.getDecryptResultSafe(count);
-        if (!decrypted)
-            revert("Value is not ready");
+        if (!decrypted) revert("Value is not ready");
 
         return value;
-    }    
+    }
 }
