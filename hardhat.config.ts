@@ -22,7 +22,17 @@ const config: HardhatUserConfig = {
   // defaultNetwork: 'localcofhe',
   networks: {
     // localcofhe, eth-sepolia, and arb-sepolia are auto-injected by @cofhe/hardhat-plugin
-
+    // Sepolia testnet configuration
+    "eth-sepolia": {
+      url:
+        process.env.SEPOLIA_RPC_URL ||
+        "https://ethereum-sepolia.publicnode.com",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 11155111,
+      gasMultiplier: 1.2,
+      timeout: 60000,
+      httpHeaders: {},
+    },
     // Base Sepolia testnet configuration (not provided by plugin)
     "base-sepolia": {
       url: process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
