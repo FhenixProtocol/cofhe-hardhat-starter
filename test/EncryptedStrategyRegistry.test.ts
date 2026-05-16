@@ -1,6 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import hre from "hardhat";
-import { Encryptable, FheTypes } from "@cofhe/sdk";
+import { Encryptable } from "@cofhe/sdk";
 import { expect } from "chai";
 
 const TASK_COFHE_MOCKS_DEPLOY = "task:cofhe-mocks:deploy";
@@ -96,13 +96,14 @@ describe("EncryptedStrategyRegistry", function () {
       await registry.connect(signer).addStrategy(addr1.address, enc[0]);
 
       // getActive is authorized — signer is both vault and owner, so allowed
-      const activeBefore = await registry.connect(signer).getActive(addr1.address);
+      // Use staticCall to get the return value without sending a transaction
+      const activeBefore = await registry.connect(signer).getActive.staticCall(addr1.address);
       const activePlainBefore = await hre.cofhe.mocks.getPlaintext(activeBefore);
       expect(activePlainBefore).to.equal(1n); // true
 
       await registry.connect(signer).removeStrategy(addr1.address);
 
-      const activeAfter = await registry.connect(signer).getActive(addr1.address);
+      const activeAfter = await registry.connect(signer).getActive.staticCall(addr1.address);
       const activePlainAfter = await hre.cofhe.mocks.getPlaintext(activeAfter);
       expect(activePlainAfter).to.equal(0n); // false
     });
@@ -116,15 +117,15 @@ describe("EncryptedStrategyRegistry", function () {
       const enc = await client.encryptInputs([Encryptable.uint16(5000n)]).execute();
       await registry.connect(signer).addStrategy(addr1.address, enc[0]);
 
-      // Check initial weight sum
-      const sumBefore = await registry.connect(signer).getWeightSum();
+      // Check initial weight sum using staticCall to get the return value
+      const sumBefore = await registry.connect(signer).getWeightSum.staticCall();
       await hre.cofhe.mocks.expectPlaintext(sumBefore, 5000n);
 
       // Update weight to 8000
       const encNew = await client.encryptInputs([Encryptable.uint16(8000n)]).execute();
       await registry.connect(signer).updateWeight(addr1.address, encNew[0]);
 
-      const sumAfter = await registry.connect(signer).getWeightSum();
+      const sumAfter = await registry.connect(signer).getWeightSum.staticCall();
       await hre.cofhe.mocks.expectPlaintext(sumAfter, 8000n);
     });
   });
@@ -140,10 +141,12 @@ describe("EncryptedStrategyRegistry", function () {
       const enc2 = await client.encryptInputs([Encryptable.uint16(4000n)]).execute();
       await registry.connect(signer).addStrategy(addr2.address, enc2[0]);
 
-      const weightSum = await registry.connect(signer).getWeightSum();
-      const decrypted = await client
-        .decryptForView(weightSum, FheTypes.Uint16)
-        .execute();
+      // staticCall gets the handle, then real tx persists the FHE.allowSender state
+      const weightSum = await registry.connect(signer).getWeightSum.staticCall();
+      await registry.connect(signer).getWeightSum();
+
+      // Use getPlaintext to read the encrypted value from mock storage
+      const decrypted = await hre.cofhe.mocks.getPlaintext(weightSum);
 
       expect(decrypted).to.equal(10000n);
     });

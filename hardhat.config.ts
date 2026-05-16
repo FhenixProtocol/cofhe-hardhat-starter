@@ -26,6 +26,9 @@ const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
   // defaultNetwork: 'localcofhe',
   networks: {
+    hardhat: {
+      allowUnlimitedContractSize: true,
+    },
     // localcofhe, eth-sepolia, and arb-sepolia are auto-injected by @cofhe/hardhat-plugin
 
     // Base Sepolia testnet configuration (not provided by plugin)

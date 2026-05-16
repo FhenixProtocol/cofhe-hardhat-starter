@@ -108,12 +108,29 @@ describe("PrivateRebalancer", function () {
         .connect(signer)
         .configureVault(vaultAddr.address, encDrift[0], encMinTime[0]);
 
-      // currentDrift = 0 (below threshold 500), time not elapsed -> should be false
-      const shouldRebalance = await rebalancer
+      // Send the real tx so FHE operations persist in mock storage
+      // Then parse TaskCreated events to find the 'or' result handle
+      const TASK_MANAGER_ADDRESS = "0xeA30c4B8b44078Bbf8a6ef5b9f1eC1626C7848D9";
+      const taskManagerIface = new hre.ethers.Interface([
+        "event TaskCreated(uint256 ctHash, string operation, uint256 input1, uint256 input2, uint256 input3)"
+      ]);
+
+      const tx = await rebalancer
         .connect(signer)
         .checkRebalanceNeeded(vaultAddr.address, hre.ethers.ZeroAddress, 0);
+      const receipt = await tx.wait();
 
-      const plaintext = await hre.cofhe.mocks.getPlaintext(shouldRebalance);
+      // Find the last TaskCreated event (which is the 'or' result = shouldRebalance)
+      const taskEvents = receipt!.logs
+        .filter(log => log.address.toLowerCase() === TASK_MANAGER_ADDRESS.toLowerCase())
+        .map(log => { try { return taskManagerIface.parseLog(log); } catch { return null; } })
+        .filter(e => e !== null && e.name === "TaskCreated");
+
+      const orEvent = taskEvents.find(e => e!.args[1] === "or");
+      expect(orEvent).to.not.be.undefined;
+
+      const shouldRebalanceHandle = orEvent!.args[0];
+      const plaintext = await hre.cofhe.mocks.getPlaintext(shouldRebalanceHandle);
       expect(plaintext).to.equal(0n); // false
     });
 
@@ -133,12 +150,29 @@ describe("PrivateRebalancer", function () {
         .connect(signer)
         .configureVault(vaultAddr.address, encDrift[0], encMinTime[0]);
 
-      // currentDrift = 600 > 500 threshold -> drift condition true
-      const shouldRebalance = await rebalancer
+      // Send the real tx so FHE operations persist in mock storage
+      // Then parse TaskCreated events to find the 'or' result handle
+      const TASK_MANAGER_ADDRESS = "0xeA30c4B8b44078Bbf8a6ef5b9f1eC1626C7848D9";
+      const taskManagerIface = new hre.ethers.Interface([
+        "event TaskCreated(uint256 ctHash, string operation, uint256 input1, uint256 input2, uint256 input3)"
+      ]);
+
+      const tx = await rebalancer
         .connect(signer)
         .checkRebalanceNeeded(vaultAddr.address, hre.ethers.ZeroAddress, 600);
+      const receipt = await tx.wait();
 
-      const plaintext = await hre.cofhe.mocks.getPlaintext(shouldRebalance);
+      // Find the 'or' TaskCreated event (which is the shouldRebalance result)
+      const taskEvents = receipt!.logs
+        .filter(log => log.address.toLowerCase() === TASK_MANAGER_ADDRESS.toLowerCase())
+        .map(log => { try { return taskManagerIface.parseLog(log); } catch { return null; } })
+        .filter(e => e !== null && e.name === "TaskCreated");
+
+      const orEvent = taskEvents.find(e => e!.args[1] === "or");
+      expect(orEvent).to.not.be.undefined;
+
+      const shouldRebalanceHandle = orEvent!.args[0];
+      const plaintext = await hre.cofhe.mocks.getPlaintext(shouldRebalanceHandle);
       expect(plaintext).to.equal(1n); // true
     });
   });
