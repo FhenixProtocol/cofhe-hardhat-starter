@@ -13,9 +13,14 @@ const config: HardhatUserConfig = {
     gasWarning: true,
   },
   solidity: {
-    version: "0.8.28",
+    version: "0.8.26",
     settings: {
       evmVersion: "cancun",
+      viaIR: true,
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
     },
   },
   defaultNetwork: "hardhat",
@@ -31,6 +36,20 @@ const config: HardhatUserConfig = {
       gasMultiplier: 1.2,
       timeout: 60000,
       httpHeaders: {},
+    },
+    "base-fork": {
+      url: "https://base-mainnet.g.alchemy.com/v2/gBLyY4xTb-MP1ZkxdnJdTqkYKQjxi_XO",
+      chainId: 8453,
+      forking: {
+        url: "https://base-mainnet.g.alchemy.com/v2/gBLyY4xTb-MP1ZkxdnJdTqkYKQjxi_XO",
+      },
+    },
+    "arb-fork": {
+      url: "https://arb-mainnet.g.alchemy.com/v2/gBLyY4xTb-MP1ZkxdnJdTqkYKQjxi_XO",
+      chainId: 42161,
+      forking: {
+        url: "https://arb-mainnet.g.alchemy.com/v2/gBLyY4xTb-MP1ZkxdnJdTqkYKQjxi_XO",
+      },
     },
   },
 
