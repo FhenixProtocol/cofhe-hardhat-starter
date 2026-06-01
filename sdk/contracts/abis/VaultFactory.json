@@ -1,0 +1,288 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vaultRegistry",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_mechanismFactory",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "registry",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "allocationMechanism",
+        "type": "address"
+      }
+    ],
+    "name": "VaultCreated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "asset",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "donationAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "enum VaultFactory.AllocationMechanismType",
+            "name": "allocationMechanismType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address[]",
+            "name": "initialRecipients",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "initialWeights",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "votingCandidates",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "votingEpochDuration",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "ctHash",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint8",
+                "name": "securityZone",
+                "type": "uint8"
+              },
+              {
+                "internalType": "uint8",
+                "name": "utype",
+                "type": "uint8"
+              },
+              {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct InEuint16",
+            "name": "vaultCreatorFeeEncrypted",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "ctHash",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint8",
+                "name": "securityZone",
+                "type": "uint8"
+              },
+              {
+                "internalType": "uint8",
+                "name": "utype",
+                "type": "uint8"
+              },
+              {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct InEuint16",
+            "name": "driftThresholdEncrypted",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "ctHash",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint8",
+                "name": "securityZone",
+                "type": "uint8"
+              },
+              {
+                "internalType": "uint8",
+                "name": "utype",
+                "type": "uint8"
+              },
+              {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct InEuint32",
+            "name": "minTimeBetweenRebalancesEncrypted",
+            "type": "tuple"
+          },
+          {
+            "internalType": "address",
+            "name": "keeper",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "emergencyAdmin",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "maxStrategies",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct VaultFactory.VaultParams",
+        "name": "params",
+        "type": "tuple"
+      }
+    ],
+    "name": "createVault",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "vault",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "registry",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "rebalancer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "disclosureModule",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "yieldRouter",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "allocationMechanism",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct VaultFactory.DeployedVault",
+        "name": "deployed",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "mechanismFactory",
+    "outputs": [
+      {
+        "internalType": "contract AllocationMechanismFactory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rebalancerContract",
+    "outputs": [
+      {
+        "internalType": "contract PrivateRebalancer",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vaultRegistry",
+    "outputs": [
+      {
+        "internalType": "contract VaultRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

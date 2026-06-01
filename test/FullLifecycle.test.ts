@@ -266,10 +266,12 @@ describe("Full Lifecycle Integration Tests", function () {
         emergencyAdmin,
         recipient,
         client,
+        encFee: precomputedEncFee,
+        encDrift: precomputedEncDrift,
+        encMinTime: precomputedEncMinTime,
       } = fixture;
 
-      // Deploy vault manually
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // Deploy vault manually using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -279,7 +281,7 @@ describe("Full Lifecycle Integration Tests", function () {
         keeper.address,
         emergencyAdmin.address,
         recipient.address,
-        encFee[0]
+        precomputedEncFee[0]
       );
 
       // Deploy registry
@@ -310,13 +312,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
-      // Configure rebalancer
-      const encDrift = await client.encryptInputs([Encryptable.uint16(500n)]).execute();
-      const encMinTime = await client.encryptInputs([Encryptable.uint32(86400n)]).execute();
+      // Configure rebalancer using pre-computed encrypted values
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        encDrift[0],
-        encMinTime[0]
+        precomputedEncDrift[0],
+        precomputedEncMinTime[0]
       );
 
       // Initialize vault
@@ -436,10 +436,11 @@ describe("Full Lifecycle Integration Tests", function () {
         emergencyAdmin,
         recipient,
         client,
+        encDrift: precomputedEncDrift,
+        encMinTime: precomputedEncMinTime,
       } = fixture;
 
-      // Deploy vault manually
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // Deploy vault manually using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -449,7 +450,7 @@ describe("Full Lifecycle Integration Tests", function () {
         keeper.address,
         emergencyAdmin.address,
         recipient.address,
-        encFee[0]
+        fixture.encFee[0]
       );
 
       // Deploy registry
@@ -480,10 +481,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
+      // Configure rebalancer using pre-computed encrypted values
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        (await client.encryptInputs([Encryptable.uint16(500n)])).execute()[0],
-        (await client.encryptInputs([Encryptable.uint32(86400n)])).execute()[0]
+        precomputedEncDrift[0],
+        precomputedEncMinTime[0]
       );
 
       await vault.connect(deployer).initialize(
@@ -575,10 +577,11 @@ describe("Full Lifecycle Integration Tests", function () {
         recipient,
         user1,
         client,
+        encDrift: precomputedEncDrift,
+        encMinTime: precomputedEncMinTime,
       } = fixture;
 
-      // Deploy vault manually
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // Deploy vault manually using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -588,7 +591,7 @@ describe("Full Lifecycle Integration Tests", function () {
         keeper.address,
         emergencyAdmin.address,
         recipient.address,
-        encFee[0]
+        fixture.encFee[0]
       );
 
       // Deploy registry
@@ -619,10 +622,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
+      // Configure rebalancer using pre-computed encrypted values
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        (await client.encryptInputs([Encryptable.uint16(500n)])).execute()[0],
-        (await client.encryptInputs([Encryptable.uint32(86400n)])).execute()[0]
+        precomputedEncDrift[0],
+        precomputedEncMinTime[0]
       );
 
       await vault.connect(deployer).initialize(
@@ -747,10 +751,11 @@ describe("Full Lifecycle Integration Tests", function () {
         emergencyAdmin,
         recipient,
         client,
+        encDrift: precomputedEncDrift,
+        encMinTime: precomputedEncMinTime,
       } = fixture;
 
-      // Deploy vault manually
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // Deploy vault manually using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -760,7 +765,7 @@ describe("Full Lifecycle Integration Tests", function () {
         keeper.address,
         emergencyAdmin.address,
         recipient.address,
-        encFee[0]
+        fixture.encFee[0]
       );
 
       // Deploy registry
@@ -791,13 +796,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
-      // Configure rebalancer with low threshold for testing
-      const encDrift = await client.encryptInputs([Encryptable.uint16(100n)]).execute();
-      const encMinTime = await client.encryptInputs([Encryptable.uint32(0n)]).execute(); // 0 = always can rebalance
+      // Configure rebalancer with low threshold for testing (using pre-computed values)
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        encDrift[0],
-        encMinTime[0]
+        precomputedEncDrift[0],
+        precomputedEncMinTime[0]
       );
 
       await vault.connect(deployer).initialize(
@@ -904,10 +907,11 @@ describe("Full Lifecycle Integration Tests", function () {
         recipient,
         user1,
         client,
+        encDrift: precomputedEncDrift,
+        encMinTime: precomputedEncMinTime,
       } = fixture;
 
-      // Deploy vault manually
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // Deploy vault manually using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -917,7 +921,7 @@ describe("Full Lifecycle Integration Tests", function () {
         keeper.address,
         emergencyAdmin.address,
         recipient.address,
-        encFee[0]
+        fixture.encFee[0]
       );
 
       // Deploy registry
@@ -948,10 +952,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
+      // Configure rebalancer using pre-computed encrypted values
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        (await client.encryptInputs([Encryptable.uint16(500n)])).execute()[0],
-        (await client.encryptInputs([Encryptable.uint32(86400n)])).execute()[0]
+        precomputedEncDrift[0],
+        precomputedEncMinTime[0]
       );
 
       await vault.connect(deployer).initialize(
@@ -1044,10 +1049,11 @@ describe("Full Lifecycle Integration Tests", function () {
         emergencyAdmin,
         recipient,
         client,
+        encDrift: precomputedEncDrift,
+        encMinTime: precomputedEncMinTime,
       } = fixture;
 
-      // Deploy vault manually
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // Deploy vault manually using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -1057,7 +1063,7 @@ describe("Full Lifecycle Integration Tests", function () {
         keeper.address,
         emergencyAdmin.address,
         recipient.address,
-        encFee[0]
+        fixture.encFee[0]
       );
 
       // Deploy minimal infrastructure
@@ -1085,10 +1091,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
+      // Configure rebalancer using pre-computed encrypted values
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        (await client.encryptInputs([Encryptable.uint16(500n)])).execute()[0],
-        (await client.encryptInputs([Encryptable.uint32(86400n)])).execute()[0]
+        precomputedEncDrift[0],
+        precomputedEncMinTime[0]
       );
 
       await vault.connect(deployer).initialize(
@@ -1174,10 +1181,12 @@ describe("Full Lifecycle Integration Tests", function () {
         user1,
         user2,
         client,
+        encFee,
+        encDrift,
+        encMinTime,
       } = await loadFixture(deployFullLifecycleFixture);
 
-      // 1. Deploy vault
-      const encFee = await client.encryptInputs([Encryptable.uint16(200n)]).execute();
+      // 1. Deploy vault using pre-computed encrypted fee
       const VaultFactory = await hre.ethers.getContractFactory("PrivateComposableVault");
       const vault = await VaultFactory.connect(deployer).deploy(
         await asset.getAddress(),
@@ -1215,10 +1224,11 @@ describe("Full Lifecycle Integration Tests", function () {
       const RebalancerFactory = await hre.ethers.getContractFactory("PrivateRebalancer");
       const rebalancer = await RebalancerFactory.connect(deployer).deploy(deployer.address);
 
+      // Configure rebalancer using pre-computed encrypted values
       await rebalancer.connect(deployer).configureVault(
         await vault.getAddress(),
-        (await client.encryptInputs([Encryptable.uint16(500n)])).execute()[0],
-        (await client.encryptInputs([Encryptable.uint32(86400n)])).execute()[0]
+        encDrift[0],
+        encMinTime[0]
       );
 
       await vault.connect(deployer).initialize(

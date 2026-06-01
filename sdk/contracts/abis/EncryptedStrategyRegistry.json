@@ -1,0 +1,449 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxStrategies",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_factory",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "got",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "expected",
+        "type": "uint8"
+      }
+    ],
+    "name": "InvalidEncryptedInput",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int32",
+        "name": "value",
+        "type": "int32"
+      }
+    ],
+    "name": "SecurityZoneOutOfBounds",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "auditor",
+        "type": "address"
+      }
+    ],
+    "name": "AuditorAllowed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "StrategyAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "StrategyRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "WeightUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct InEuint16",
+        "name": "encWeight",
+        "type": "tuple"
+      }
+    ],
+    "name": "addStrategy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "auditor",
+        "type": "address"
+      }
+    ],
+    "name": "allowAuditor",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "factory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "getActive",
+    "outputs": [
+      {
+        "internalType": "ebool",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllStrategyAddresses",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "addrs",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getStrategyAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "getTotalDebt",
+    "outputs": [
+      {
+        "internalType": "euint128",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "getWeight",
+    "outputs": [
+      {
+        "internalType": "euint16",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getWeightSum",
+    "outputs": [
+      {
+        "internalType": "euint16",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "isStrategyRegistered",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxStrategies",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rebalancer",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      }
+    ],
+    "name": "removeStrategy",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_rebalancer",
+        "type": "address"
+      }
+    ],
+    "name": "setRebalancer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      },
+      {
+        "internalType": "uint128",
+        "name": "plainDebt",
+        "type": "uint128"
+      }
+    ],
+    "name": "setTotalDebt",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "strategyCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct InEuint16",
+        "name": "encNewWeight",
+        "type": "tuple"
+      }
+    ],
+    "name": "updateWeight",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vault",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

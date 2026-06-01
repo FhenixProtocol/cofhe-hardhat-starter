@@ -1,0 +1,160 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "got",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
+        "name": "expected",
+        "type": "uint8"
+      }
+    ],
+    "name": "InvalidEncryptedInput",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "int32",
+        "name": "value",
+        "type": "int32"
+      }
+    ],
+    "name": "SecurityZoneOutOfBounds",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ONE",
+    "outputs": [
+      {
+        "internalType": "euint32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allowCounterPublicly",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "count",
+    "outputs": [
+      {
+        "internalType": "euint32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decrement",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getDecryptedValue",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "increment",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "isInitialized",
+    "outputs": [
+      {
+        "internalType": "ebool",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "ctHash",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "securityZone",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "utype",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct InEuint32",
+        "name": "value",
+        "type": "tuple"
+      }
+    ],
+    "name": "reset",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint32",
+        "name": "plaintext",
+        "type": "uint32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "revealCounter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
