@@ -1,0 +1,46 @@
+{
+  "name": "@cofhe/protocol-sdk",
+  "version": "0.1.0",
+  "description": "SDK for CoFHE Private Composable Vault protocol with confidential operations",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "hardhat test",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "keywords": [
+    "cofhe",
+    "fhe",
+    "fully-homomorphic-encryption",
+    "ethereum",
+    "viem",
+    "web3",
+    "confidential"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@cofhe/sdk": "workspace:*",
+    "@types/node": "^20.11.0",
+    "hardhat": "^2.22.0",
+    "typescript": "^5.4.0"
+  },
+  "peerDependencies": {
+    "@cofhe/sdk": ">=0.1.0",
+    "viem": ">=2.21.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./abis": "./abis/index.ts",
+    "./client": "./dist/client.js"
+  }
+}

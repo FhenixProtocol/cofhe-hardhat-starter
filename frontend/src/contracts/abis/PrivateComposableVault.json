@@ -1,0 +1,44 @@
+[
+  {
+    "type": "function",
+    "name": "asset",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "totalAssets",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "owner",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "address" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "deposit",
+    "inputs": [
+      { "name": "assets", "type": "uint256" },
+      { "name": "receiver", "type": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "withdraw",
+    "inputs": [
+      { "name": "assets", "type": "uint256" },
+      { "name": "receiver", "type": "address" },
+      { "name": "owner", "type": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256" }],
+    "stateMutability": "nonpayable"
+  }
+]
