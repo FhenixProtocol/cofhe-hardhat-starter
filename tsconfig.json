@@ -6,6 +6,9 @@
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"skipLibCheck": true,
-		"resolveJsonModule": true
-	}
+		"resolveJsonModule": true,
+		"rootDir": "."
+	},
+	"include": ["./tasks/**/*.ts", "./test/**/*.ts", "./hardhat.config.ts"],
+	"exclude": ["node_modules", "artifacts", "cache", "dist", "typechain-types"]
 }
