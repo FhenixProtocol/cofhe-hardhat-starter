@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 // SVG Illustration Components
@@ -146,7 +145,7 @@ const Navigation = () => (
       </div>
 
       {/* Nav Links */}
-      <div className="hidden md:flex items-center gap-8">
+      <div className="flex items-center gap-8">
         <Link href="#features" className="nav-link">
           Features
         </Link>
@@ -156,8 +155,8 @@ const Navigation = () => (
         <Link href="#security" className="nav-link">
           Security
         </Link>
-        <Link href="#docs" className="nav-link">
-          Docs
+        <Link href="/dashboard" className="nav-link">
+          App
         </Link>
       </div>
 
@@ -215,9 +214,9 @@ const HeroSection = () => (
 
       {/* CTA Buttons */}
       <div className="flex items-center justify-center gap-4 flex-wrap">
-        <button className="btn-primary text-base px-8 py-4">
+        <Link href="/dashboard" className="btn-primary text-base px-8 py-4">
           Launch App
-        </button>
+        </Link>
         <button className="btn-secondary text-base px-8 py-4">
           Watch Demo
         </button>
