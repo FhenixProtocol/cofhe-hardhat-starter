@@ -4,6 +4,7 @@ import { WagmiProvider, createConfig, http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { arbitrum, arbitrumSepolia, mainnet } from "viem/chains";
 import { injected } from "wagmi/connectors";
+import { CoFHEProvider } from "../lib/cofhe-provider";
 
 // Wagmi config
 const wagmiConfig = createConfig({
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <CoFHEProvider>
+          {children}
+        </CoFHEProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
