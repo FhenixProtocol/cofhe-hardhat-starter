@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount } from "wagmi";
+import { useState, useEffect, useCallback } from "react";
+import { useAccount, useWalletClient } from "wagmi";
 import { WalletButton } from "../../components/WalletButton";
 import { EncryptedBalance } from "../../components/EncryptedBalance";
 import { DepositModal } from "../../components/DepositModal";
 import { WithdrawModal } from "../../components/WithdrawModal";
 import { LockIcon, ArrowDownIcon, ArrowUpIcon, ShieldIcon } from "../../components/icons";
+import { useCoFHE } from "../../lib/cofhe-provider";
+import { usePublicClient, useContractRead } from "wagmi";
+import { PrivateComposableVaultAbi } from "../../contracts/abis";
 
 // Mock vault data
 const MOCK_VAULTS = [
@@ -120,10 +123,26 @@ function VaultCard({ vault, onSelect, isSelected }: {
 }
 
 // Strategy Panel
-function StrategyPanel({ vault, onDeposit, onWithdraw }: { 
+function StrategyPanel({ 
+  vault, 
+  onDeposit, 
+  onWithdraw,
+  balance,
+  isLoadingBalance,
+  balanceError,
+  onRefreshBalance,
+  tokenSymbol,
+  tokenDecimals = 6,
+}: { 
   vault: typeof MOCK_VAULTS[0] | null;
   onDeposit: () => void;
   onWithdraw: () => void;
+  balance?: string | null;
+  isLoadingBalance?: boolean;
+  balanceError?: string | null;
+  onRefreshBalance?: () => void;
+  tokenSymbol?: string;
+  tokenDecimals?: number;
 }) {
   if (!vault) {
     return (
@@ -135,14 +154,14 @@ function StrategyPanel({ vault, onDeposit, onWithdraw }: {
 
   return (
     <div className="space-y-6">
-      {/* Encrypted Balance Display */}
+      {/* Encrypted Balance Display with real decryption */}
       <EncryptedBalance
-        balance={null}
-        isLoading={false}
-        error={null}
-        onRefresh={() => console.log("Refresh balance")}
-        tokenSymbol={vault.token}
-        decimals={vault.decimals}
+        balance={balance ?? null}
+        isLoading={isLoadingBalance ?? false}
+        error={balanceError ?? null}
+        onRefresh={onRefreshBalance ?? (() => {})}
+        tokenSymbol={tokenSymbol ?? vault.token}
+        decimals={tokenDecimals ?? vault.decimals}
       />
 
       {/* Action Buttons */}
@@ -216,25 +235,119 @@ function EmptyState() {
   );
 }
 
-// Dashboard Content
+// Dashboard Content with real CoFHE SDK
 function DashboardContent() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const { encrypt, decrypt, isReady } = useCoFHE();
+  const publicClient = usePublicClient();
   const [selectedVault, setSelectedVault] = useState<typeof MOCK_VAULTS[0] | null>(null);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [userBalance, setUserBalance] = useState<bigint | null>(null);
+  const [balanceCtHash, setBalanceCtHash] = useState<bigint | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
 
+  // Read user's encrypted balance from vault contract
+  const { data: encryptedBalanceHandle } = useContractRead({
+    address: selectedVault?.address,
+    abi: PrivateComposableVaultAbi,
+    functionName: "balanceOf",
+    args: [address as `0x${string}`],
+    // Note: enabled is handled by conditional rendering/check in refreshBalance
+  });
+
+  // Decrypt balance when it changes
+  const refreshBalance = useCallback(async () => {
+    if (!encryptedBalanceHandle || !isReady) return;
+
+    setIsLoadingBalance(true);
+    setBalanceError(null);
+
+    try {
+      const ctHash = encryptedBalanceHandle as bigint;
+      setBalanceCtHash(ctHash);
+      const decrypted = await decrypt(ctHash, "uint128");
+      setUserBalance(decrypted);
+    } catch (err) {
+      console.error("Failed to decrypt balance:", err);
+      setBalanceError(err instanceof Error ? err.message : "Decryption failed");
+      setUserBalance(null);
+    } finally {
+      setIsLoadingBalance(false);
+    }
+  }, [encryptedBalanceHandle, isReady, decrypt]);
+
+  useEffect(() => {
+    if (isConnected && selectedVault && encryptedBalanceHandle) {
+      refreshBalance();
+    }
+  }, [isConnected, selectedVault, encryptedBalanceHandle, refreshBalance]);
+
+  // Deposit with real FHE encryption
   const handleDeposit = async (amount: bigint): Promise<boolean> => {
-    // Simulate deposit - in real app, use useEncryptedDeposit hook
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Depositing:", amount);
-    return true;
+    if (!selectedVault || !walletClient || !publicClient || !address || !encrypt) {
+      throw new Error("Wallet not connected");
+    }
+
+    try {
+      // Encrypt the deposit amount using CoFHE SDK
+      const encryptedAmount = await encrypt(amount, "uint128");
+      console.log("Encrypted deposit amount:", encryptedAmount);
+
+      // Send transaction with encrypted input using wallet client
+      const hash = await walletClient.writeContract({
+        address: selectedVault.address,
+        abi: PrivateComposableVaultAbi,
+        functionName: "deposit",
+        args: [encryptedAmount, address],
+      });
+
+      // Wait for confirmation
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log("Deposit confirmed:", receipt.transactionHash);
+
+      // Refresh balance after deposit
+      await refreshBalance();
+      return true;
+    } catch (err) {
+      console.error("Deposit failed:", err);
+      return false;
+    }
   };
 
+  // Withdraw using wallet client
   const handleWithdraw = async (shares: bigint, recipient: `0x${string}`): Promise<boolean> => {
-    // Simulate withdraw - in real app, use useEncryptedWithdraw hook
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Withdrawing:", shares, "to", recipient);
-    return true;
+    if (!selectedVault || !walletClient || !publicClient || !address) {
+      throw new Error("Wallet not connected");
+    }
+
+    try {
+      const hash = await walletClient.writeContract({
+        address: selectedVault.address,
+        abi: PrivateComposableVaultAbi,
+        functionName: "withdraw",
+        args: [shares, recipient, address],
+      });
+
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log("Withdraw confirmed:", receipt.transactionHash);
+
+      // Refresh balance after withdrawal
+      await refreshBalance();
+      return true;
+    } catch (err) {
+      console.error("Withdraw failed:", err);
+      return false;
+    }
+  };
+
+  // Format balance for display
+  const formatBalance = (balance: bigint | null, decimals: number = 6): string | null => {
+    if (balance === null) return null;
+    const formatted = Number(balance) / Math.pow(10, decimals);
+    return formatted.toFixed(2);
   };
 
   return (
@@ -271,6 +384,12 @@ function DashboardContent() {
               vault={selectedVault}
               onDeposit={() => setShowDepositModal(true)}
               onWithdraw={() => setShowWithdrawModal(true)}
+              balance={formatBalance(userBalance, selectedVault?.decimals)}
+              isLoadingBalance={isLoadingBalance}
+              balanceError={balanceError}
+              onRefreshBalance={refreshBalance}
+              tokenSymbol={selectedVault?.token}
+              tokenDecimals={selectedVault?.decimals}
             />
           </div>
         </div>
