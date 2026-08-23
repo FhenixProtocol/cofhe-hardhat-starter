@@ -265,4 +265,43 @@ describe("Counter", function () {
       }
     });
   });
+
+  describe("Access Control & Security", function () {
+    it("Should NOT allow unauthorized user (Alice) to decrypt Bob's private counter", async function () {
+      const { counter, bob, alice } = await loadFixture(deployCounterFixture);
+
+      // Bob sayaci artirir (izin sadece Bob ve soylesmeye aittir)
+      await counter.connect(bob).increment();
+
+      // Alice kendi istemcisini olusturur
+      const aliceClient = await hre.cofhe.createClientWithBatteries(alice);
+
+      const count = await counter.count();
+
+      // Yetkisiz Alice, Bob'un sayacini cozmeye calistiginda sistem hata vermeli
+      try {
+        await aliceClient.decryptForView(count, FheTypes.Uint32).execute();
+        expect.fail("Expected Alice's unauthorized decryption to fail");
+      } catch (error) {
+        expect(error).to.exist;
+      }
+    });
+
+    it("Should allow Alice to decrypt after counter is made public via allowCounterPublicly", async function () {
+      const { counter, bob, alice } = await loadFixture(deployCounterFixture);
+
+      await counter.connect(bob).increment();
+      await counter.connect(bob).allowCounterPublicly();
+
+      const aliceClient = await hre.cofhe.createClientWithBatteries(alice);
+      const count = await counter.count();
+
+      const result = await aliceClient
+        .decryptForTx(count)
+        .withoutPermit()
+        .execute();
+
+      expect(result.decryptedValue).to.equal(1n);
+    });
+  });
 });
